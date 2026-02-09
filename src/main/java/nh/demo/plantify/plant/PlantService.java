@@ -1,5 +1,6 @@
 package nh.demo.plantify.plant;
 
+import nh.demo.plantify.care.CareTaskService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
@@ -16,10 +17,12 @@ public class PlantService {
 
     private final PlantRepository plantRepository;
     private final ApplicationEventPublisher events;
+    private final CareTaskService careTaskService;
 
-    PlantService(PlantRepository plantRepository, ApplicationEventPublisher events) {
+    PlantService(PlantRepository plantRepository, ApplicationEventPublisher events, CareTaskService careTaskService) {
         this.plantRepository = plantRepository;
         this.events = events;
+        this.careTaskService = careTaskService;
     }
 
     @Transactional
@@ -32,14 +35,11 @@ public class PlantService {
         var plant = new Plant(ownerId, name, plantType, location);
         plantRepository.save(plant);
 
-
-        log.debug("Publishing PlantRegisteredEvent");
-        events.publishEvent(new PlantRegisteredEvent(
+        careTaskService.setupInitialCareTasks(
             plant.getId(),
-            plant.getOwnerId(),
             plant.getPlantType(),
             plant.getLocation()
-        ));
+        );
 
         return plant;
     }

@@ -5,7 +5,7 @@ import nh.demo.plantify.care.suggestion.CareTaskType;
 import java.time.LocalDate;
 import java.util.UUID;
 
-record CareTaskDto(
+public record CareTaskDto(
     UUID id,
     UUID plantId,
     CareTaskType type,

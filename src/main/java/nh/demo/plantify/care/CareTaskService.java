@@ -4,12 +4,11 @@ import nh.demo.plantify.care.suggestion.CareTaskSuggestion;
 import nh.demo.plantify.care.suggestion.CareTaskSuggestionService;
 import nh.demo.plantify.care.suggestion.OneTimeCareTaskSuggestion;
 import nh.demo.plantify.care.suggestion.RecurringCareTaskSuggestion;
-import nh.demo.plantify.plant.PlantRegisteredEvent;
+import nh.demo.plantify.plant.PlantType;
 import nh.demo.plantify.shared.exceptions.ResourceNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.modulith.events.ApplicationModuleListener;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,7 +17,7 @@ import java.util.List;
 import java.util.UUID;
 
 @Service
-class CareTaskService {
+public class CareTaskService {
 
     private static final Logger log = LoggerFactory.getLogger(CareTaskService.class);
 
@@ -32,80 +31,22 @@ class CareTaskService {
         this.careTaskSuggestionService = careTaskSuggestionService;
     }
 
-    @ApplicationModuleListener
-    void onPlantRegistered(PlantRegisteredEvent event) {
-        log.debug("Received PlantRegisteredEvent {}", event);
+    @Transactional
+    public void setupInitialCareTasks(UUID plantId, PlantType plantType, String location) {
         var suggestionsForPlant = careTaskSuggestionService.getBestSuggestionsByPlantType(
-            event.plantType(),
-            event.location()
+            plantType,
+            location
         );
 
         var careTasks = suggestionsForPlant.stream()
             .map(t -> createFromSuggestion(
-                event.plantId(),
+                plantId,
                 t
             ))
             .toList();
 
         var savedCareTasks = careTaskRepository.saveAll(careTasks);
-
-        log.info("Created {} CareTasks for plant '{}'. Sending XXXX",
-            savedCareTasks.size(),
-            event.plantId()
-        );
-
-        applicationEventPublisher.publishEvent(
-            new InitialCareTasksCreatedEvent(event.plantId())
-        );
-
     }
-
-    @Transactional
-    public CareTaskDto completeTask(UUID careTaskId) {
-        log.info("Completing care task '{}'", careTaskId);
-
-        var careTask = careTaskRepository.findById(careTaskId)
-            .orElseThrow(() -> new ResourceNotFoundException(CareTask.class, careTaskId));
-
-        if (!careTask.isActive()) {
-            throw new IllegalStateException("Care Task '%s' is not active".formatted(careTaskId));
-        }
-
-        careTask.complete();
-        careTaskRepository.save(careTask);
-
-        log.info("Sending CareTaskCompletedEvent for care task '{}'", careTaskId);
-        applicationEventPublisher.publishEvent(
-            new CareTaskCompletedEvent(
-                careTask.getId(),
-                careTask.getPlantId(),
-                careTask.getType()
-            )
-        );
-
-        if (!careTask.isActive()) {
-            log.info("Sending CareTaskDeactivatedEvent for care task '{}'", careTaskId);
-            applicationEventPublisher.publishEvent(
-                new CareTaskDeactivatedEvent(
-                    careTask.getId(),
-                    careTask.getPlantId()
-                )
-            );
-        }
-
-        return CareTaskDto.of(careTask);
-
-    }
-
-    @Transactional(readOnly = true)
-    List<CareTaskDto> getAllCareTasks() {
-        return careTaskRepository
-            .findAllByOrderByNextDueDate().stream()
-            .map(CareTaskDto::of)
-            .toList();
-    }
-
-
 
     private CareTask createFromSuggestion(UUID plantId, CareTaskSuggestion suggestion) {
         return switch (suggestion) {

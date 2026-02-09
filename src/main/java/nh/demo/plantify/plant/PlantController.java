@@ -1,5 +1,6 @@
 package nh.demo.plantify.plant;
 
+import jakarta.validation.constraints.NotNull;
 import nh.demo.plantify.shared.exceptions.ResourceNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,6 +46,23 @@ class PlantController {
         );
 
         return PlantDto.of(newPlant);
+
+    }
+
+    /**
+     * Mehr oder minder identisch mit Plant, Sinn eines eigenen DTOs hier zweifelhaft, aber für Demo benötigt
+     */
+    static record PlantDto(@NotNull UUID id, @NotNull UUID ownerId, @NotNull String name, @NotNull String location) {
+
+        static PlantDto of(Plant plant) {
+            return new PlantDto(
+                plant.getId(),
+                plant.getOwnerId(),
+                plant.getName(),
+                plant.getLocation()
+            );
+        }
+
 
     }
 }

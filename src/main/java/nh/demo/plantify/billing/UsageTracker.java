@@ -3,21 +3,19 @@ package nh.demo.plantify.billing;
 import nh.demo.plantify.billing.invoice.UsageRecord;
 import nh.demo.plantify.billing.invoice.UsageRepository;
 import nh.demo.plantify.billing.invoice.UsageType;
-import nh.demo.plantify.care.CareTaskCompletedEvent;
-import nh.demo.plantify.care.InitialCareTasksCreatedEvent;
 import nh.demo.plantify.care.suggestion.CareTaskType;
 import nh.demo.plantify.plant.PlantService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.modulith.events.ApplicationModuleListener;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
-import java.time.temporal.ChronoUnit;
 import java.util.UUID;
 
-@Component
-class UsageTracker {
+@Service
+public class UsageTracker {
 
     private static final Logger log = LoggerFactory.getLogger(UsageTracker.class);
     private final UsageRepository usageRepository;
@@ -28,36 +26,16 @@ class UsageTracker {
         this.plantService = plantService;
     }
 
-    @ApplicationModuleListener
-    void trackInitialCareTasksCreated(InitialCareTasksCreatedEvent event) {
-        log.debug("Tracking InitialCareTasksCreatedEvent={}", event);
+    @Transactional
+    public void initialCareTasksCreated(UUID plantId) {
         UsageRecord usageRecord = new UsageRecord(
-            getOwnerForPlant(event.plantId()),
+            getOwnerForPlant(plantId),
             UsageType.SETUP_FEE,
             Instant.now(),
             1000L
         );
 
         usageRepository.save(usageRecord);
-
-        log.info("Successfully tracked initial care tasks: usageId={}", usageRecord.getId());
-    }
-
-    @ApplicationModuleListener
-    void trackCareTaskCompleted(CareTaskCompletedEvent event) {
-        log.debug("Tracking CareTaskCompletedEvent={}", event.careTaskId());
-
-        var costs = getCareTaskCostCents(event.careTaskType());
-
-        UsageRecord usageRecord = new UsageRecord(
-            getOwnerForPlant(event.plantId()),
-            UsageType.CARE_TASK_COMPLETED,
-            Instant.now(),
-            costs
-        );
-
-        usageRepository.save(usageRecord);
-        log.info("Successfully tracked care task: usageId={}, costs={}", usageRecord.getId(), costs);
     }
 
     private UUID getOwnerForPlant(UUID plantId) {

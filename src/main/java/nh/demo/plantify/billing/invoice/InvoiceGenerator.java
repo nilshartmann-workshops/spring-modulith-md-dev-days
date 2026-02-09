@@ -2,19 +2,16 @@ package nh.demo.plantify.billing.invoice;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.context.event.EventListener;
-import org.springframework.modulith.moments.MonthHasPassed;
 import org.springframework.modulith.moments.support.Moments;
-import org.springframework.modulith.moments.support.TimeMachine;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.time.Instant;
-import java.time.ZoneOffset;
+import java.time.*;
 import java.util.List;
 import java.util.UUID;
+import java.util.function.Consumer;
 
 @Component
 class InvoiceGenerator {
@@ -22,29 +19,22 @@ class InvoiceGenerator {
     private static final Logger log = LoggerFactory.getLogger(InvoiceGenerator.class);
     private final UsageRepository usageRepository;
 
-    private final ApplicationEventPublisher applicationEventPublisher;
-    private final Moments moments;
+    private final ObjectProvider<Clock> clockProvider;
 
-    InvoiceGenerator(UsageRepository usageRepository, ApplicationEventPublisher applicationEventPublisher, Moments moments) {
+    InvoiceGenerator(UsageRepository usageRepository, ApplicationEventPublisher applicationEventPublisher, ObjectProvider<Clock> clockProvider) {
         this.usageRepository = usageRepository;
-        this.applicationEventPublisher = applicationEventPublisher;
-        this.moments = moments;
+        this.clockProvider = clockProvider;
     }
 
-    @EventListener
-    @Transactional
-    void generateInvoices(MonthHasPassed event) {
-        log.info("Month has passed. Generating invoices for: {}", event.getMonth());
-
-        var month = event.getMonth();
+    private void generateInvoicesForMonth(YearMonth month, Consumer<Invoice> onInvoiceGenerated) {
         Instant start = month.atDay(1).atStartOfDay().toInstant(ZoneOffset.UTC);
         Instant end = month.atEndOfMonth().atTime(23, 59, 59).toInstant(ZoneOffset.UTC);
+
+        var invoiceCreatedAt = LocalDateTime.now(clockProvider.getIfAvailable(Clock::systemDefaultZone));
 
         List<UUID> ownerIds = usageRepository.findOwnerIdsBetween(
             start, end
         );
-
-        var invoiceCreatedAt = moments.now();
 
         ownerIds.forEach(ownerId -> {
                 var usageRecords = usageRepository.getUsagesForOwnerRecordedBetween(
@@ -60,7 +50,7 @@ class InvoiceGenerator {
                     )
                     .movePointLeft(2);
 
-                var invoiceCreatedEvent = new InvoiceGeneratedEvent(
+                var invoice = new Invoice(
                     invoiceCreatedAt,
                     ownerId,
                     month,
@@ -68,11 +58,7 @@ class InvoiceGenerator {
                     usageRecords.stream().map(BillingItem::of).toList()
                 );
 
-                applicationEventPublisher.publishEvent(invoiceCreatedEvent);
-
-                log.info("Invoice created for client '{}', published event: {}",
-                    ownerId, invoiceCreatedEvent
-                );
+                onInvoiceGenerated.accept(invoice);
             }
         );
     }
@@ -86,6 +72,5 @@ class InvoiceGenerator {
 
         return BigDecimal.valueOf(costsCents).movePointLeft(2);
     }
-
 
 }
