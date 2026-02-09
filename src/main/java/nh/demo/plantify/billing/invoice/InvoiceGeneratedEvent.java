@@ -29,7 +29,6 @@ record BillingItem(
 public record InvoiceGeneratedEvent(
     LocalDateTime createdAt,
     UUID ownerId,
-    String ownerName,
     YearMonth billingPeriod,
     BigDecimal amount,
     List<BillingItem> billingItems

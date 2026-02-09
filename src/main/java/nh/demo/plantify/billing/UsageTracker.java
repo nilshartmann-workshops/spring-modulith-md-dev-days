@@ -7,7 +7,6 @@ import nh.demo.plantify.care.CareTaskCompletedEvent;
 import nh.demo.plantify.care.InitialCareTasksCreatedEvent;
 import nh.demo.plantify.care.suggestion.CareTaskType;
 import nh.demo.plantify.plant.PlantService;
-import nh.demo.plantify.storage.PlantStorageCompletedEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.modulith.events.ApplicationModuleListener;
@@ -59,24 +58,6 @@ class UsageTracker {
 
         usageRepository.save(usageRecord);
         log.info("Successfully tracked care task: usageId={}, costs={}", usageRecord.getId(), costs);
-    }
-
-    @ApplicationModuleListener
-    void trackStorageCompleted(PlantStorageCompletedEvent event) {
-        log.debug("Tracking PlantStorageCompletedEvent storageId={}", event.storageId());
-
-        var storageTime = ChronoUnit.DAYS.between(event.startDate(), event.endDate());
-        var storageCostCents = storageTime * 200L;
-
-        UsageRecord usageRecord = new UsageRecord(
-            getOwnerForPlant(event.plantId()),
-            UsageType.STORAGE_COMPLETED,
-            Instant.now(),
-            storageCostCents
-        );
-
-        usageRepository.save(usageRecord);
-        log.info("Successfully tracked storage completed: usageId={}, storageCostCents={}", usageRecord.getId(), storageCostCents);
     }
 
     private UUID getOwnerForPlant(UUID plantId) {

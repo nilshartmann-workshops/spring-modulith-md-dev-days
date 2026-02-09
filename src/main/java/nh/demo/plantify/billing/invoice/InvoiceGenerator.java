@@ -1,11 +1,11 @@
 package nh.demo.plantify.billing.invoice;
 
-import nh.demo.plantify.owner.OwnerRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.event.EventListener;
 import org.springframework.modulith.moments.MonthHasPassed;
+import org.springframework.modulith.moments.support.Moments;
 import org.springframework.modulith.moments.support.TimeMachine;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,14 +23,12 @@ class InvoiceGenerator {
     private final UsageRepository usageRepository;
 
     private final ApplicationEventPublisher applicationEventPublisher;
-    private final TimeMachine timeMachine;
-    private final OwnerRepository ownerRepository;
+    private final Moments moments;
 
-    InvoiceGenerator(UsageRepository usageRepository, ApplicationEventPublisher applicationEventPublisher, TimeMachine timeMachine, OwnerRepository ownerRepository) {
+    InvoiceGenerator(UsageRepository usageRepository, ApplicationEventPublisher applicationEventPublisher, Moments moments) {
         this.usageRepository = usageRepository;
         this.applicationEventPublisher = applicationEventPublisher;
-        this.timeMachine = timeMachine;
-        this.ownerRepository = ownerRepository;
+        this.moments = moments;
     }
 
     @EventListener
@@ -46,17 +44,13 @@ class InvoiceGenerator {
             start, end
         );
 
-        var invoiceCreatedAt = timeMachine.now();
+        var invoiceCreatedAt = moments.now();
 
         ownerIds.forEach(ownerId -> {
                 var usageRecords = usageRepository.getUsagesForOwnerRecordedBetween(
                     ownerId, start, end
                 );
 
-
-                var owner = ownerRepository.findById(ownerId).orElseThrow();
-                // for simplicity we only publish the event
-                // but does not write the invoice to the database
 
                 var amount = BigDecimal.valueOf(
                         usageRecords
@@ -69,7 +63,6 @@ class InvoiceGenerator {
                 var invoiceCreatedEvent = new InvoiceGeneratedEvent(
                     invoiceCreatedAt,
                     ownerId,
-                    owner.getName(),
                     month,
                     amount,
                     usageRecords.stream().map(BillingItem::of).toList()
