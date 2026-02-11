@@ -1,6 +1,6 @@
 package nh.demo.plantify.care;
 
-import nh.demo.plantify.plant.PlantType;
+import nh.demo.plantify.shared.PlantType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;

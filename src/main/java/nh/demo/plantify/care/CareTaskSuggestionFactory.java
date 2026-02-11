@@ -1,9 +1,7 @@
 package nh.demo.plantify.care;
 
-import nh.demo.plantify.plant.PlantType;
-import org.springframework.stereotype.Component;
+import nh.demo.plantify.shared.PlantType;
 
-import java.time.LocalDate;
 import java.util.List;
 
 public interface CareTaskSuggestionFactory {

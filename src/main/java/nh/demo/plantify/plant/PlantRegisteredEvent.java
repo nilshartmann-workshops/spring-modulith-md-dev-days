@@ -1,6 +1,6 @@
 package nh.demo.plantify.plant;
 
-import nh.demo.plantify.plant.PlantType;
+import nh.demo.plantify.shared.PlantType;
 
 import java.util.UUID;
 

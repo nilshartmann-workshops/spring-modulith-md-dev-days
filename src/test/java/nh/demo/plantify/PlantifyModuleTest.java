@@ -11,12 +11,17 @@ public class PlantifyModuleTest {
         var modules = ApplicationModules
             .of(PlantifyApplication.class);
 
-        modules.verify();
+        modules.detectViolations()
+            // Alternative, um bestehende Probleme zu ignorieren:
+//            .filter(v -> !v.hasMessageContaining(" Method <nh.demo.plantify.care.CareTaskService.setupInitialCareTasks"))
+            .throwIfPresent();
 
         // -> PlantType in 'shared' schieben
         //   -> andere Optionen:
+        //    - ignorieren (wäre für Migration legitim)
         //    - jedes Modul hat eigene Repräsentation eines Pflanzentyps
         //    - wir bauen nachher die App sowieso nochmal um, dann kann PlantType zurück
+
     }
 
     @Test
