@@ -1,0 +1,3 @@
+- CareTaskSuggestions sollen von anderen Modulen bereitgestellt werden
+- Da es sich dabei um eine "Unter-Domaine" handelt, in eigenes Package schieben
+- Problem: jetzt können wir nicht mehr darauf zugreifen, weil _internes_ Modul

@@ -1,4 +1,4 @@
-package nh.demo.plantify.care;
+package nh.demo.plantify.care.suggestions;
 
 import nh.demo.plantify.shared.PlantType;
 import org.springframework.stereotype.Service;
@@ -9,7 +9,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
-class CareTaskSuggestionService {
+public class CareTaskSuggestionService {
 
     private final List<CareTaskSuggestionFactory> factories;
 

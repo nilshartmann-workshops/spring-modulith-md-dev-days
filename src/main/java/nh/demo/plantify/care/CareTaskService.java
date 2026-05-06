@@ -1,5 +1,7 @@
 package nh.demo.plantify.care;
 
+import nh.demo.plantify.care.suggestions.CareTaskSuggestion;
+import nh.demo.plantify.care.suggestions.CareTaskSuggestionService;
 import nh.demo.plantify.shared.PlantType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
