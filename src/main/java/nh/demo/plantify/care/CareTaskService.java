@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.event.EventListener;
+import org.springframework.modulith.events.ApplicationModuleListener;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -32,9 +33,10 @@ public class CareTaskService {
         this.careTaskSuggestionService = careTaskSuggestionService;
     }
 
-    @TransactionalEventListener
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
-    @Async
+//    @TransactionalEventListener
+//    @Transactional(propagation = Propagation.REQUIRES_NEW)
+//    @Async
+    @ApplicationModuleListener
     void onPlantRegistered(PlantRegisteredEvent event) {
         setupInitialCareTasks(event.plantId(), event.plantType(), event.location());
     }

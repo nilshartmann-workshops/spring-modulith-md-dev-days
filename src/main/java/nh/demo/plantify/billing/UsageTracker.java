@@ -5,6 +5,7 @@ import nh.demo.plantify.shared.CareTaskType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.event.EventListener;
+import org.springframework.modulith.events.ApplicationModuleListener;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -24,10 +25,23 @@ public class UsageTracker {
         this.usageRepository = usageRepository;
     }
 
-    @TransactionalEventListener
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
-    @Async
+//    @TransactionalEventListener
+//    @Transactional(propagation = Propagation.REQUIRES_NEW)
+//    @Async
+    @ApplicationModuleListener
     void onPlantCreated(PlantRegisteredEvent event) {
+        if (true) {
+            // 🤔 Was passiert wenn hier was schiefgeht?
+            // Vor dem zeigen nochmal DB leer machen!
+            //  - Tabellen "plant" und "care_tasks" befüllt ✅
+            //  - usage_record nicht, wir bekommen also kein Geld 😢
+            //
+            // 🕵️‍♂️ publication_registry-Tabelle
+            //   - Zwei Einträge (pro Listener einer)
+            //   - State ansehen (einmal COMPLETED, einmal FAILED)
+            throw new RuntimeException("Nö");
+        }
+
         registerSetupFee(event.plantId(), event.ownerId());
     }
 
