@@ -14,7 +14,7 @@ class RoseCareSuggestionFactory implements CareTaskSuggestionFactory {
 //                                  ^--- IntelliJ Bug, wird weiterhin als Fehler angezeigt, Test ist grün
 //                                                    ^--- Problem: internes API
     
-    private CareTaskService careTaskService;
+//    private CareTaskService careTaskService;
 //                      ^--- Korrekt: CTS ist zwar public,
 //                           aber nicht Bestandteil des NamedInterfaces
 //                           das wir als einzige erlaubte Abhängigkeit

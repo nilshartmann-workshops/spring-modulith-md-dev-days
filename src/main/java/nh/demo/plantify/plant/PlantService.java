@@ -5,6 +5,7 @@ import nh.demo.plantify.care.CareTaskService;
 import nh.demo.plantify.shared.PlantType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,13 +18,15 @@ class PlantService {
     private static final Logger log = LoggerFactory.getLogger(PlantService.class);
 
     private final PlantRepository plantRepository;
-    private final CareTaskService careTaskService;
-    private final UsageTracker usageTracker;
+//    private final CareTaskService careTaskService;
+//    private final UsageTracker usageTracker;
+    private final ApplicationEventPublisher applicationEventPublisher;
 
-    PlantService(PlantRepository plantRepository, CareTaskService careTaskService, UsageTracker usageTracker) {
+    PlantService(PlantRepository plantRepository, ApplicationEventPublisher applicationEventPublisher) {
         this.plantRepository = plantRepository;
-        this.careTaskService = careTaskService;
-        this.usageTracker = usageTracker;
+//        this.careTaskService = careTaskService;
+//        this.usageTracker = usageTracker;
+        this.applicationEventPublisher = applicationEventPublisher;
     }
 
     @Transactional
@@ -39,19 +42,31 @@ class PlantService {
         //
         //  🤔 Was sind die Konsequenzen?
 
-
-        // Care-Tasks anlegen
-        careTaskService.setupInitialCareTasks(
-            plant.getId(),
-            plant.getPlantType(),
-            plant.getLocation()
+        // Zeigen:
+        //  -> Unterschiedliche Threads bei der Verarbeitung
+        //  -> Asynchron (Folgeverarbeitung blockiert Haupt Use-Case nicht)
+        applicationEventPublisher.publishEvent(
+            new PlantRegisteredEvent(
+                plant.getId(),
+                plant.getOwnerId(),
+                plant.getPlantType(),
+                plant.getLocation()
+            )
         );
 
-        // Einrichtungsgebühr berechnen
-        usageTracker.registerSetupFee(
-            plant.getId(),
-            plant.getOwnerId()
-        );
+
+//        // Care-Tasks anlegen
+//        careTaskService.setupInitialCareTasks(
+//            plant.getId(),
+//            plant.getPlantType(),
+//            plant.getLocation()
+//        );
+//
+//        // Einrichtungsgebühr berechnen
+//        usageTracker.registerSetupFee(
+//            plant.getId(),
+//            plant.getOwnerId()
+//        );
 
         log.info("""
             
