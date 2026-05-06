@@ -30,7 +30,7 @@ public class UsageTracker {
 //    @Async
     @ApplicationModuleListener
     void onPlantCreated(PlantRegisteredEvent event) {
-        if (true) {
+        if (false) {
             // 🤔 Was passiert wenn hier was schiefgeht?
             // Vor dem zeigen nochmal DB leer machen!
             //  - Tabellen "plant" und "care_tasks" befüllt ✅
