@@ -1,4 +1,4 @@
-package nh.demo.plantify.plant;
+package nh.demo.plantify.shared;
 
 public enum PlantType {
     SUMMER_FLOWERS,    // Sommerblumen

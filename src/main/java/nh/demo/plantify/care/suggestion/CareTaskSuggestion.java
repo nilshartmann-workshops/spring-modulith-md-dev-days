@@ -1,4 +1,4 @@
-package nh.demo.plantify.care;
+package nh.demo.plantify.care.suggestion;
 
 import nh.demo.plantify.shared.CareTaskType;
 

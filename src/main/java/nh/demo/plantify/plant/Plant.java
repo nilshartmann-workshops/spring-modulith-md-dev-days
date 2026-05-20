@@ -1,6 +1,7 @@
 package nh.demo.plantify.plant;
 
 import jakarta.persistence.*;
+import nh.demo.plantify.shared.PlantType;
 
 import java.util.UUID;
 

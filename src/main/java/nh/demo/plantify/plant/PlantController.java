@@ -1,6 +1,7 @@
 package nh.demo.plantify.plant;
 
 import jakarta.validation.constraints.NotNull;
+import nh.demo.plantify.shared.PlantType;
 import nh.demo.plantify.shared.ResourceNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
